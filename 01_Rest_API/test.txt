@@ -1,0 +1,5 @@
+what we do in mongoose 
+
+Schema - Define the structure 
+   schema- Model
+   using model we do CURD operation

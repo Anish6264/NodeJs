@@ -1,0 +1,62 @@
+Rest API - JSON
+
+GET /api/user - List all users
+
+Get/api/user/1 - get the user with id 1
+Get/api/user/2 - get the user with id 2
+
+post/api/user - create new user
+
+patch /api/user/1 - edit the user wiwth id 1
+
+delete/api/user/1 -  delete user with id 1 
+
+// we use /api because we want that the server can be used by mobile phone
+
+app.get('/users',(req,res)=>{
+    const html= `
+    <ul>
+    ${users.map((user) => `<li>${user.first_name}</li>`).join("")}
+    </ul>
+    `
+    res.send(html)
+}) here we use join so that , do not come at end1771182632275 GET /api/users1771182648875 DELETE /api/users/10021771182681391 PATCH /api/users/10001771182685306 DELETE /api/users/10021771182688628 POST /api/users1771182704290 POST /api/users 
+1771182709243 DELETE /api/users/1002 
+1771182714318 DELETE /api/users/1003 
+1771182717694 PATCH /api/users/1000 
+1771237450896 GET /api/users 
+1771237520467 GET /api/users 
+1771237549914 GET /api/users 
+1771240720266 POST /api/users 
+1771936846467 POST /api/users 
+1771936981285 POST /api/users 
+1771937075935 POST /api/users 
+1771937174364 POST /api/users 
+1771937274535 POST /api/users 
+1771937407073 POST /api/users 
+1771937438615 POST /api/users 
+1771937513225 POST /api/users 
+1771937544235 GET /api/users 
+1771937545830 GET /favicon.ico 
+1771937564028 GET /users 
+1772168530646 GET /api/users 
+1772168564990 POST /api/users 
+1772168571172 GET /api/users 
+1772168597481 DELETE /api/users/699d9ee9abe316c8b2c502ec 
+1772168600816 GET /api/users 
+1772168625472 PATCH /api/users/69a1257445bffd51e26afd7c 
+1772168629238 GET /api/users 
+1772168649751 PATCH /api/users/69a1257445bffd51e26afd7c 
+1772168655213 GET /api/users 
+1772168775600 PATCH /api/users/69a1257445bffd51e26afd7c 
+1772168781162 GET /api/users 
+1772168793971 DELETE /api/users/69a1257445bffd51e26afd7c 
+1772168797900 GET /api/users 
+1772168805590 POST /api/users 
+1772168808990 GET /api/users 
+1772168821941 PATCH /api/users/69a1266545bffd51e26afd89 
+1772168825811 GET /api/users 
+1772168871869 PATCH /api/users/69a1266545bffd51e26afd89 
+1772168875748 GET /api/users 
+1772168904810 PATCH /api/users/69a1266545bffd51e26afd89 
+1772168908380 GET /api/users 

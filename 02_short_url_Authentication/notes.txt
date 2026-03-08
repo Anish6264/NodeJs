@@ -1,0 +1,875 @@
+        <html>
+        <head></head>
+        <body>
+         <ol>
+         ${allUrls.map(url =>`<li> ${url.shortId} - ${url.originalUrl} - ${url.visitHistory.length}</li>`).join("")}
+         </ol>
+        </body>
+        </html>
+        `
+
+
+
+
+        1. server less web par token hi kaam krte he 
+
+        2. statefull authentication me cookies generate hoti he par wo server ki memory use krti he isliye apn stateless use krte he or usme token generate hote he 
+
+        3. cookies are domin specific means jo server jo cookies banata he wo usi server ke pass jati he like agr me facebook open krung to meri har request ke saath keval whi cookies jayengi jo facebook ne generate ki he we can also give domin name for cookies so that other site have that domin can excess that but this is not good practices. we can also set expire date. they are limited to browser you can not use them in any mobile application for that we use response({token})
+
+
+# 1️⃣ Project Architecture
+
+Your project follows **MVC Architecture**.
+
+```text
+Client (Browser)
+       │
+       ▼
+Routes (Express Router)
+       │
+       ▼
+Middleware (Authentication)
+       │
+       ▼
+Controllers (Business Logic)
+       │
+       ▼
+Models (Mongoose)
+       │
+       ▼
+MongoDB Database
+```
+
+---
+
+# 2️⃣ Folder Structure
+
+```text
+project
+│
+├── controllers
+│     ├── user.js
+│     └── url.js
+│
+├── models
+│     ├── user.js
+│     └── url.js
+│
+├── routes
+│     ├── user.js
+│     ├── url.js
+│     └── staticRouter.js
+│
+├── middleware
+│     └── auth.js
+│
+├── service
+│     └── auth.js
+│
+├── views
+│     ├── home.ejs
+│     ├── login.ejs
+│     └── signup.ejs
+│
+├── connect.js
+└── index.js
+```
+
+---
+
+# 3️⃣ Server Initialization (index.js)
+
+Server setup steps:
+
+```text
+1. Create Express app
+2. Connect MongoDB
+3. Configure view engine (EJS)
+4. Add middleware
+5. Register routes
+6. Start server
+```
+
+Important code:
+
+```js
+app.use("/url",restrictToLoggedinUserOnly,urlRouter);
+app.use("/user", userRoute);
+app.use("/", checkAuth, staticRouter);
+```
+
+---
+
+# 4️⃣ Middleware
+
+Middleware runs **before the route controller**.
+
+---
+
+## restrictToLoggedinUserOnly
+
+Purpose:
+
+```text
+Allows only logged-in users to access protected routes
+```
+
+Example:
+
+```js
+app.use("/url",restrictToLoggedinUserOnly,urlRouter);
+```
+
+Flow:
+
+```text
+1. Read cookie
+2. Get sessionId
+3. Find user in Map
+4. Attach user to req.user
+5. Call next()
+```
+
+---
+
+## checkAuth
+
+Purpose:
+
+```text
+Check if user is logged in but do not block request
+```
+
+Used for:
+
+```text
+home page rendering
+```
+
+---
+
+# 5️⃣ Authentication System
+
+Your project uses:
+
+```text
+Stateful Authentication
+```
+
+Reason:
+
+```text
+Server stores session data in memory (Map)
+```
+
+---
+
+## Session Storage
+
+File:
+
+```text
+service/auth.js
+```
+
+Data structure:
+
+```text
+Map
+```
+
+Example:
+
+```text
+sessionId → userObject
+```
+
+---
+
+## setUser()
+
+Purpose:
+
+```text
+Store sessionId and user in Map
+```
+
+Code logic:
+
+```text
+Map.set(sessionId, user)
+```
+
+Used when:
+
+```text
+User logs in
+```
+
+---
+
+## getUser()
+
+Purpose:
+
+```text
+Retrieve user using sessionId
+```
+
+Code logic:
+
+```text
+Map.get(sessionId)
+```
+
+Used when:
+
+```text
+User makes request with cookie
+```
+
+---
+
+# 6️⃣ Cookie Usage
+
+Cookie stores:
+
+```text
+sessionId
+```
+
+Example cookie:
+
+```text
+uid = abc123-session-id
+```
+
+Browser sends cookie on every request.
+
+---
+
+# 7️⃣ Database Models
+
+Database: **MongoDB**
+
+---
+
+## User Model
+
+Fields:
+
+```text
+_id
+name
+email
+password
+createdAt
+updatedAt
+```
+
+Example document:
+
+```json
+{
+ "_id": "65fa12...",
+ "name": "Anish",
+ "email": "anish@gmail.com",
+ "password": "1234"
+}
+```
+
+---
+
+## URL Model
+
+Fields:
+
+```text
+shortId
+originalUrl
+visitHistory
+createdBy
+createdAt
+updatedAt
+```
+
+Example:
+
+```json
+{
+ "shortId": "Abc123",
+ "originalUrl": "https://google.com",
+ "visitHistory": [],
+ "createdBy": "userId"
+}
+```
+
+---
+
+# 8️⃣ Why `_id` is Used
+
+MongoDB automatically creates:
+
+```text
+_id
+```
+
+It is the **primary key of the document**.
+
+Used for:
+
+```text
+document identification
+relationships
+queries
+```
+
+Example:
+
+```text
+URL.createdBy → User._id
+```
+
+---
+
+# 9️⃣ User Signup Flow
+
+Route:
+
+```text
+POST /user
+```
+
+Flow:
+
+```text
+Form Submit
+     │
+     ▼
+routes/user.js
+     │
+     ▼
+handelUserSignup()
+     │
+     ▼
+User.create()
+     │
+     ▼
+User stored in MongoDB
+```
+
+---
+
+# 🔟 User Login Flow
+
+Route:
+
+```text
+POST /user/login
+```
+
+Flow:
+
+```text
+1. User enters email/password
+2. Server checks database
+3. SessionId generated
+4. setUser(sessionId,user)
+5. Cookie stored
+6. Redirect to home
+```
+
+Example session storage:
+
+```text
+Map {
+   sessionId → userObject
+}
+```
+
+---
+
+# 1️⃣1️⃣ Home Page Flow
+
+Request:
+
+```text
+GET /
+```
+
+Flow:
+
+```text
+checkAuth middleware
+        │
+        ▼
+staticRouter
+        │
+        ▼
+URL.find({createdBy:req.user._id})
+        │
+        ▼
+home.ejs rendered
+```
+
+---
+
+# 1️⃣2️⃣ Generate Short URL
+
+Route:
+
+```text
+POST /url
+```
+
+Controller:
+
+```text
+handelGenerateShortUrl()
+```
+
+Steps:
+
+```text
+1. Generate nanoid
+2. Store URL in database
+3. Save createdBy = user._id
+4. Render home page
+```
+
+Example document:
+
+```json
+{
+ "shortId":"AbC123",
+ "originalUrl":"https://google.com",
+ "visitHistory":[],
+ "createdBy":"userId"
+}
+```
+
+---
+
+# 1️⃣3️⃣ URL Redirection
+
+Route:
+
+```text
+GET /url/:shortId
+```
+
+Controller:
+
+```text
+handelOrginalUrl()
+```
+
+Steps:
+
+```text
+1. Find shortId in DB
+2. Push timestamp to visitHistory
+3. Redirect to original URL
+```
+
+---
+
+# 1️⃣4️⃣ Analytics Route
+
+Route:
+
+```text
+GET /url/analytics/:shortId
+```
+
+Purpose:
+
+```text
+Get click analytics
+```
+
+Response:
+
+```json
+{
+ totalClicks:10,
+ analytics:[timestamps]
+}
+```
+
+---
+
+# 1️⃣5️⃣ Data Storage Summary
+
+MongoDB stores:
+
+```text
+users collection
+urls collection
+```
+
+Server memory stores:
+
+```text
+sessionId → user
+```
+
+Browser stores:
+
+```text
+cookie (uid)
+```
+
+---
+
+# 1️⃣6️⃣ Complete Request Flow
+
+```text
+User Login
+     │
+     ▼
+SessionId created
+     │
+     ▼
+setUser() stores session
+     │
+     ▼
+Cookie stored in browser
+     │
+     ▼
+User request
+     │
+     ▼
+Cookie sent
+     │
+     ▼
+getUser() retrieves user
+     │
+     ▼
+req.user attached
+     │
+     ▼
+Controller executes
+```
+
+---
+
+# 1️⃣7️⃣ Authentication Type
+
+Your project uses:
+
+```text
+Stateful Authentication
+```
+
+Because:
+
+```text
+Server stores session state
+```
+
+Alternative:
+
+```text
+Stateless Authentication → JWT
+```
+
+---
+
+# 1️⃣8️⃣ Limitations of Current System
+
+Issues:
+
+```text
+1. Password not hashed
+2. Sessions stored in memory
+3. Session lost if server restarts
+4. No logout functionality
+```
+
+---
+
+# 1️⃣9️⃣ Improvements for Production
+
+Best practices:
+
+```text
+bcrypt → password hashing
+JWT → stateless authentication
+Redis → session storage
+Helmet → security headers
+Rate limiting → prevent abuse
+```
+
+---
+
+# 🎤 How to Explain This Project in Interview
+
+You can say:
+
+> I built a URL shortener using Node.js, Express, MongoDB and EJS.
+> The project follows MVC architecture where routes handle endpoints, controllers contain business logic, models manage MongoDB schemas, and middleware handles authentication.
+> I implemented stateful authentication using cookies and session IDs stored in server memory.
+> Users can sign up, log in, generate short URLs, and track analytics like click history. Each URL is linked to the user using the MongoDB `_id` reference.
+
+
+
+Ok Anish 👍 let’s understand **static routes in your project** clearly, because the name can be confusing.
+
+First important point:
+
+> Your `staticRouter` is **not about static files (CSS, images, JS)**.
+> It is used for **rendering static pages like login, signup, and home**.
+
+---
+
+# 1️⃣ Where Static Routes Are Used
+
+File:
+
+```text
+routes/staticRouter.js
+```
+
+Routes inside it:
+
+```js
+router.get("/")
+router.get("/signup")
+router.get("/login")
+```
+
+These routes **render EJS pages**.
+
+---
+
+# 2️⃣ Why It Is Called Static Router
+
+Because these routes:
+
+* Do **not modify database**
+* Do **not create data**
+* Mostly **render pages**
+
+So they are called **static page routes**.
+
+Example pages:
+
+```text
+Home page
+Login page
+Signup page
+```
+
+---
+
+# 3️⃣ How It Is Connected In Server
+
+Inside `index.js`:
+
+```js
+app.use("/", checkAuth, staticRouter);
+```
+
+Meaning:
+
+```text
+Every request starting with "/"
+goes to staticRouter
+```
+
+But before that:
+
+```text
+checkAuth middleware runs
+```
+
+---
+
+# 4️⃣ Static Routes In Your Project
+
+### 1️⃣ Home Route
+
+```js
+router.get("/", async (req, res) => {
+  if(!req.user) return res.redirect("/login");
+
+  const allUrls = await URL.find({createdBy: req.user._id});
+
+  return res.render("home",{
+    urls: allUrls
+  });
+});
+```
+
+Purpose:
+
+```text
+Display user's shortened URLs
+```
+
+Steps:
+
+```
+GET /
+ ↓
+checkAuth middleware
+ ↓
+staticRouter
+ ↓
+Fetch user URLs
+ ↓
+Render home.ejs
+```
+
+---
+
+### 2️⃣ Signup Page
+
+```js
+router.get("/signup",(req,res)=>{
+  return res.render("signup")
+})
+```
+
+Purpose:
+
+```text
+Display signup form
+```
+
+Flow:
+
+```
+GET /signup
+ ↓
+staticRouter
+ ↓
+signup.ejs rendered
+```
+
+---
+
+### 3️⃣ Login Page
+
+```js
+router.get("/login",(req,res)=>{
+  return res.render("login")
+});
+```
+
+Purpose:
+
+```text
+Display login form
+```
+
+Flow:
+
+```
+GET /login
+ ↓
+staticRouter
+ ↓
+login.ejs rendered
+```
+
+---
+
+# 5️⃣ Why Static Router Is Separate
+
+Your project separates routes by **responsibility**.
+
+| Router       | Purpose                            |
+| ------------ | ---------------------------------- |
+| userRouter   | authentication (signup/login POST) |
+| urlRouter    | URL creation and redirection       |
+| staticRouter | page rendering                     |
+
+This makes the code **clean and modular**.
+
+---
+
+# 6️⃣ Example Full Flow
+
+Example:
+
+User opens browser:
+
+```
+http://localhost:8001/
+```
+
+Flow:
+
+```
+Request → /
+        ↓
+checkAuth middleware
+        ↓
+staticRouter
+        ↓
+router.get("/")
+        ↓
+URL.find({createdBy:req.user._id})
+        ↓
+home.ejs rendered
+```
+
+---
+
+# 7️⃣ Static Router vs API Router
+
+Example difference:
+
+### Static Router
+
+```js
+res.render("home")
+```
+
+Used for:
+
+```
+Web pages
+```
+
+---
+
+### API Router
+
+Example:
+
+```js
+res.json(data)
+```
+
+Used for:
+
+```
+REST APIs
+```
+
+---
+
+# 8️⃣ Important Interview Answer
+
+If interviewer asks:
+
+**Why did you create a static router?**
+
+You can say:
+
+> I created a static router to handle page rendering routes such as the home page, login page, and signup page. This separates UI rendering logic from API routes like URL creation or authentication, making the code modular and easier to maintain.
+
+---
+
+# 9️⃣ Simple One-Line Definition
+
+Static routes are used to:
+
+```text
+Render UI pages like login, signup, and home.
+```
+
