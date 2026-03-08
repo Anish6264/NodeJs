@@ -1,0 +1,37 @@
+
+1770717248946 GET /: New request received
+1770717480462 GET /signUp: New request received
+
+// versoning of node js
+
+^4.18.2
+
+1st part -> 4
+2nd part -> 18
+3rd part -> 2
+
+// if 3rd part changes then there are minor fixes(optional to download)
+ex-4.18.3
+
+// 2nd part changes then recommended bug fix(security) should download
+ex-4.18.0
+
+// 1st part major release - major and breaking update. you should not update it for your old code because it may possible that it will change some functions you should update it only for when you are building from scratch   
+5.0.0
+
+if you want to install any old veersion then you should use npm install express@4.18.2(your old veersion)
+
+install express = ^4.18.2
+^4.18.2 here ^ show that you can not change 4 
+
+^ - Install all minor changes and recommended fixes
+
+
+~4.16.1 
+~ you can change only 3rd part only 
+
+
+Rest API follows serrver client architecture
+1.when you know that your client is browser then you send html response
+2.always respect all http method(GET,POST,DELETE,PUT,PATCH) 
+SSR is fast then CSR
